@@ -18,38 +18,43 @@ app.post('/process-dna', (req, res) => {
 
     console.log('Received DNA sequence:', dnaSequence);
 
-    // Step 1: Create a .fasta file
-    const uploadsDir = path.join(__dirname, 'uploads');
-    if (!fs.existsSync(uploadsDir)) {
-        fs.mkdirSync(uploadsDir); // Create uploads directory if it doesn't exist
+    // Step 1: Create SEQs directory if it doesn't exist
+    const seqsDir = path.join(__dirname, 'SEQss'); // Directory SEQs/
+    if (!fs.existsSync(seqsDir)) {
+        fs.mkdirSync(seqsDir); // Create SEQs directory if it doesn't exist
     }
 
+    // Step 2: Create a unique file name for the .fasta file
     const fileName = `dna_${Date.now()}.fasta`; // Unique file name
-    const filePath = path.join(uploadsDir, fileName);
+    const filePath = path.join(seqsDir, fileName); // Path to the .fasta file in SEQs/
 
-    // Write the DNA sequence to the file in FASTA format
+    // Step 3: Write the DNA sequence to the .fasta file in FASTA format
     const fastaContent = `>DNA_sequence\n${dnaSequence}`;
     fs.writeFileSync(filePath, fastaContent, 'utf8');
 
     console.log('FASTA file created at:', filePath);
 
-    // Step 2: Pass the file path to the C++ executable
+    // Step 4: Pass the file path to the C++ executable
     const executablePath = './execute.exe'; // Path to your C++ executable
-    const process = spawn(executablePath, [filePath]); // Pass file path as an argument
+    const process = spawn(executablePath, [filePath]); // Pass the SEQs/filePath as an argument
 
     let output = '';
+    let errorOutput = '';
+
     process.stdout.on('data', (data) => {
         output += data.toString();
     });
 
-    let errorOutput = '';
     process.stderr.on('data', (data) => {
         errorOutput += data.toString();
     });
 
     process.on('close', (code) => {
-        // Step 3: Clean up the file after processing
-       
+        // Step 5: Clean up the file after processing (optional)
+        // fs.unlink(filePath, (err) => {
+        //     if (err) console.error(`Failed to delete file: ${filePath}`);
+        //     else console.log(`File deleted: ${filePath}`);
+        // });
 
         if (code !== 0) {
             console.error(`Error executing C++ program: ${errorOutput}`);
