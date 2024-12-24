@@ -37,16 +37,17 @@ app.post('/process-dna', (req, res) => {
     // Step 4: Pass the file path to the C++ executable
     const executablePath = './proccess.exe'; // Path to your C++ executable
     const process = spawn(executablePath, [filePath]); // Pass the SEQs/filePath as an argument
-
     let output = '';
     let errorOutput = '';
 
     process.stdout.on('data', (data) => {
-        output += data.toString();
+        output += data.toString();  // Append the output from stdout
+        console.log('C++ stdout:', data.toString());  // Print to Node.js console
     });
-
+    
     process.stderr.on('data', (data) => {
-        errorOutput += data.toString();
+        errorOutput += data.toString();  // Append the error output
+        console.error('C++ stderr:', data.toString());  // Print to Node.js console
     });
 
     process.on('close', (code) => {
