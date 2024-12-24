@@ -35,7 +35,7 @@ app.post('/process-dna', (req, res) => {
     console.log('FASTA file created at:', filePath);
 
     // Step 4: Pass the file path to the C++ executable
-    const executablePath = './execute.exe'; // Path to your C++ executable
+    const executablePath = './proccess.exe'; // Path to your C++ executable
     const process = spawn(executablePath, [filePath]); // Pass the SEQs/filePath as an argument
 
     let output = '';
@@ -50,20 +50,16 @@ app.post('/process-dna', (req, res) => {
     });
 
     process.on('close', (code) => {
-        // Step 5: Clean up the file after processing (optional)
-        // fs.unlink(filePath, (err) => {
-        //     if (err) console.error(`Failed to delete file: ${filePath}`);
-        //     else console.log(`File deleted: ${filePath}`);
-        // });
-
+        console.log(`C++ program exited with code: ${code}`);
         if (code !== 0) {
-            console.error(`Error executing C++ program: ${errorOutput}`);
+            console.error(`Error executing C++ program: ${errorOutput || 'No error output captured'}`);
             return res.status(500).send('Error processing DNA sequence');
         }
-
+    
         console.log('Processed DNA:', output.trim());
         return res.json({ processedDna: output.trim() });
     });
+    
 });
 
 app.listen(port, () => {
